@@ -1,5 +1,6 @@
 import { List, ShoppingBagOpen, X } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
@@ -21,61 +22,67 @@ export function Header() {
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
-  return (
-    <header className="site-header">
-      <Link className="wordmark" to="/" onClick={close} aria-label="Mariosa Jewelry, на главную">
-        <span>Mariosa</span>
-        <small>Jewelry</small>
-      </Link>
-
-      <nav className="desktop-nav" aria-label="Основная навигация">
-        {navigation.map((item) => (
-          <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? 'is-active' : '')}>
+  const mobileMenu = (
+    <div className={`mobile-menu ${open ? 'is-open' : ''}`} aria-hidden={!open} inert={open ? undefined : true}>
+      <nav aria-label="Мобильная навигация">
+        {navigation.map((item, index) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={pathname === item.to ? 'is-active' : ''}
+            onClick={close}
+            style={{ transitionDelay: `${80 + index * 55}ms` }}
+          >
+            <span>0{index + 1}</span>
             {item.label}
           </NavLink>
         ))}
+        <NavLink to="/request" onClick={close} style={{ transitionDelay: '245ms' }}>
+          <span>04</span>
+          Заявка, {itemCount}
+        </NavLink>
       </nav>
+      <a href="https://t.me/Osovskaya_Marina" target="_blank" rel="noreferrer">
+        Написать Марине в Telegram
+      </a>
+    </div>
+  );
 
-      <div className="header-actions">
-        <Link className="cart-link" to="/request" aria-label={`Заявка, товаров: ${itemCount}`}>
-          <ShoppingBagOpen size={20} weight="light" aria-hidden="true" />
-          <span>Заявка</span>
-          <b>{itemCount}</b>
+  return (
+    <>
+      <header className="site-header">
+        <Link className="wordmark" to="/" onClick={close} aria-label="Mariosa Jewelry, на главную">
+          <span>Mariosa</span>
+          <small>Jewelry</small>
         </Link>
-        <button
-          className="menu-button"
-          type="button"
-          aria-label={open ? 'Закрыть меню' : 'Открыть меню'}
-          aria-expanded={open}
-          onClick={() => setOpen((value) => !value)}
-        >
-          {open ? <X size={23} weight="light" /> : <List size={23} weight="light" />}
-        </button>
-      </div>
 
-      <div className={`mobile-menu ${open ? 'is-open' : ''}`} aria-hidden={!open} inert={open ? undefined : true}>
-        <nav aria-label="Мобильная навигация">
-          {navigation.map((item, index) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={pathname === item.to ? 'is-active' : ''}
-              onClick={close}
-              style={{ transitionDelay: `${80 + index * 55}ms` }}
-            >
-              <span>0{index + 1}</span>
+        <nav className="desktop-nav" aria-label="Основная навигация">
+          {navigation.map((item) => (
+            <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? 'is-active' : '')}>
               {item.label}
             </NavLink>
           ))}
-          <NavLink to="/request" onClick={close} style={{ transitionDelay: '245ms' }}>
-            <span>04</span>
-            Заявка, {itemCount}
-          </NavLink>
         </nav>
-        <a href="https://t.me/Osovskaya_Marina" target="_blank" rel="noreferrer">
-          Написать Марине в Telegram
-        </a>
-      </div>
-    </header>
+
+        <div className="header-actions">
+          <Link className="cart-link" to="/request" aria-label={`Заявка, товаров: ${itemCount}`}>
+            <ShoppingBagOpen size={20} weight="light" aria-hidden="true" />
+            <span>Заявка</span>
+            <b>{itemCount}</b>
+          </Link>
+          <button
+            className="menu-button"
+            type="button"
+            aria-label={open ? 'Закрыть меню' : 'Открыть меню'}
+            aria-expanded={open}
+            onClick={() => setOpen((value) => !value)}
+          >
+            {open ? <X size={23} weight="light" /> : <List size={23} weight="light" />}
+          </button>
+        </div>
+      </header>
+
+      {createPortal(mobileMenu, document.body)}
+    </>
   );
 }

@@ -123,6 +123,26 @@ await page.setViewportSize({ width: 390, height: 844 });
 await page.goto(baseUrl, { waitUntil: 'networkidle' });
 await page.getByRole('button', { name: 'Открыть меню' }).click();
 await page.locator('.mobile-menu').getByRole('link', { name: '02 О мастерской' }).waitFor({ state: 'visible' });
+await page.waitForTimeout(650);
+const mobileMenuGeometry = await page.locator('.mobile-menu').evaluate((menu) => {
+  const rect = menu.getBoundingClientRect();
+  return {
+    top: rect.top,
+    right: rect.right,
+    bottom: rect.bottom,
+    left: rect.left,
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight,
+  };
+});
+if (
+  mobileMenuGeometry.top > 0
+  || mobileMenuGeometry.left > 0
+  || mobileMenuGeometry.right < mobileMenuGeometry.viewportWidth
+  || mobileMenuGeometry.bottom < mobileMenuGeometry.viewportHeight
+) {
+  throw new Error(`mobile menu overlay does not cover the viewport: ${JSON.stringify(mobileMenuGeometry)}`);
+}
 await page.screenshot({ path: `${outputDir}/mobile-menu-390.png`, fullPage: false });
 await page.getByRole('button', { name: 'Закрыть меню' }).click();
 
